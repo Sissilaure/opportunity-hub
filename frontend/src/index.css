@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  background-color: #f3f5fa;
+  color: #10182b;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid #14284a;
+  outline-offset: 2px;
+}
+
+/* Rendu du markdown léger (guides/ressources) : pas de plugin @tailwindcss/typography,
+   règles explicites pour garder la main sur le design plutôt qu'un style générique par défaut. */
+@layer components {
+  .contenu-guide h2 {
+    @apply mb-3 mt-7 font-display text-xs font-bold uppercase tracking-widest text-accent first:mt-0;
+  }
+  .contenu-guide p {
+    @apply my-3 leading-relaxed text-ink/90;
+  }
+  .contenu-guide ul,
+  .contenu-guide ol {
+    @apply my-3 space-y-2 pl-6;
+  }
+  .contenu-guide ul {
+    @apply list-disc marker:text-accent;
+  }
+  .contenu-guide ol {
+    @apply list-decimal marker:font-bold marker:text-accent;
+  }
+  .contenu-guide li {
+    @apply leading-relaxed text-ink/90;
+  }
+  .contenu-guide li input[type="checkbox"] {
+    @apply mr-2 h-4 w-4 accent-primary align-middle;
+  }
+  .contenu-guide strong {
+    @apply font-semibold text-ink;
+  }
+  .contenu-guide blockquote {
+    @apply my-4 rounded-lg border-l-4 border-primary bg-primary-light px-4 py-3 text-sm text-ink;
+  }
+
+  /* Variante rouge pour les guides de vigilance : les mêmes règles, un ton d'alerte. */
+  .contenu-guide--alerte ul {
+    @apply marker:text-danger;
+  }
+  .contenu-guide--alerte blockquote {
+    @apply border-danger bg-danger-bg;
+  }
+}

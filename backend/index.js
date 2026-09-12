@@ -1,0 +1,47 @@
+require("dotenv").config();
+const cron = require("node-cron");
+const createApp = require("./app");
+const { pool, initializeQuestionsTable, initializeAdminTable } = require("./db");
+const { rechercherNouvellesOpportunites } = require("./discoveryIA");
+const { marquerExpirees } = require("./opportunites");
+
+const app = createApp({ pool });
+const PORT = process.env.PORT || 4000;
+
+// Recherche IA de nouvelles opportunités : tout atterrit en statut 'a_verifier', jamais
+// publié sans validation d'un membre de l'équipe (voir discoveryIA.js). Sans GEMINI_API_KEY,
+// rechercherNouvellesOpportunites() est un no-op silencieux — pas besoin de cliquer sur un
+// bouton pour que ça tourne, c'est ce cycle automatique qui alimente la file "à vérifier".
+async function cycleAutomatique() {
+  try {
+    const { ajoutees, examinees } = await rechercherNouvellesOpportunites(pool);
+    if (examinees) {
+      console.log(`Recherche IA automatique : ${ajoutees}/${examinees} proposition(s) ajoutée(s) à vérifier.`);
+    }
+  } catch (err) {
+    console.error("Erreur recherche IA automatique:", err);
+  }
+
+  try {
+    const archivees = await marquerExpirees(pool, 20);
+    if (archivees) {
+      console.log(`${archivees} opportunité(s) expirée(s) depuis plus de 20 jours ont été archivées.`);
+    }
+  } catch (err) {
+    console.error("Erreur archivage des opportunités expirées:", err);
+  }
+}
+
+Promise.all([initializeQuestionsTable(), initializeAdminTable()])
+  .then(() => {
+    app.listen(PORT, () => console.log(`Backend Opportunity Hub sur http://localhost:${PORT}`));
+
+    // Un premier passage au démarrage (pas besoin d'attendre le lendemain 6h pour voir
+    // le système proposer quelque chose), puis un passage quotidien.
+    cycleAutomatique();
+    cron.schedule("0 6 * * *", cycleAutomatique);
+  })
+  .catch((err) => {
+    console.error("Impossible d'initialiser la base de données:", err);
+    process.exitCode = 1;
+  });
