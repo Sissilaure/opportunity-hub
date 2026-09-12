@@ -51,6 +51,22 @@ export function ChevronDownIcon(props) {
   );
 }
 
+export function MenuIcon(props) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path d="M3 6h14M3 10h14M3 14h14" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function CloseIcon(props) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" {...props}>
+      <path d="m5 5 10 10M15 5 5 15" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function ClockIcon(props) {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
