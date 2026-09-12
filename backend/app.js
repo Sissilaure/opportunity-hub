@@ -15,7 +15,9 @@ const createAdminOpportunitesRouter = require("./adminOpportunitesRoutes");
 
 // `pool` est injecté plutôt qu'importé directement : les tests peuvent ainsi
 // construire l'app avec un pool factice, sans dépendre d'un vrai serveur MySQL.
-function createApp({ pool }) {
+// `sessionStore` est optionnel : sans lui (comme dans les tests), express-session
+// retombe sur son MemoryStore par défaut, sans jamais toucher au pool factice.
+function createApp({ pool, sessionStore }) {
   const app = express();
   app.set("trust proxy", 1);
 
@@ -32,11 +34,14 @@ function createApp({ pool }) {
   app.use(cors({ origin: allowedOrigin, credentials: true }));
   app.use(express.json());
 
-  // Session pour l'espace équipe (Ressources/Aide)
+  // Session pour l'espace équipe (Ressources/Aide). Stockée en base (sessionStore) en
+  // production : sans ça, un redémarrage/réveil du service (courant sur un hébergement
+  // gratuit) déconnecte tout le monde puisque la MemoryStore par défaut repart à zéro.
   app.use(
     session({
       name: "connect.sid",
       secret: process.env.SESSION_SECRET || "dev-secret-a-changer",
+      store: sessionStore,
       resave: false,
       saveUninitialized: false,
       cookie: {

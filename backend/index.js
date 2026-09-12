@@ -4,8 +4,13 @@ const createApp = require("./app");
 const { pool, initializeQuestionsTable, initializeAdminTable } = require("./db");
 const { rechercherNouvellesOpportunites } = require("./discoveryIA");
 const { marquerExpirees } = require("./opportunites");
+const MySQLSessionStore = require("./sessionStore");
 
-const app = createApp({ pool });
+// Sessions stockées en base (table `sessions`, créée automatiquement) plutôt qu'en
+// mémoire : survit aux redémarrages et à la mise en veille du service (hébergement gratuit).
+const sessionStore = new MySQLSessionStore(pool);
+
+const app = createApp({ pool, sessionStore });
 const PORT = process.env.PORT || 4000;
 
 // Recherche IA de nouvelles opportunités : tout atterrit en statut 'a_verifier', jamais
