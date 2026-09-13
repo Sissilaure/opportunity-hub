@@ -21,6 +21,18 @@ function getCaCert() {
 
 const caCert = getCaCert();
 
+// Trois cas : un CA personnalisé fourni (ex. Aiven), TLS demandé explicitement mais avec
+// une autorité déjà reconnue par Node (ex. TiDB Cloud, certificats Let's Encrypt), ou pas
+// de TLS du tout (MySQL local en dev).
+let sslConfig;
+if (caCert) {
+  sslConfig = { ca: caCert, rejectUnauthorized: true };
+} else if (process.env.DB_SSL === "true") {
+  sslConfig = { rejectUnauthorized: true };
+} else {
+  sslConfig = undefined;
+}
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -30,7 +42,7 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 5,
   queueLimit: 0,
-  ssl: caCert ? { ca: caCert, rejectUnauthorized: true } : undefined,
+  ssl: sslConfig,
 });
 
 async function initializeQuestionsTable() {
